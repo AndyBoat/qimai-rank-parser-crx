@@ -148,6 +148,99 @@ function BrandParser() {
   return pageInfo
 }
 
+function MarketParser() {
+  function rankParse(rankItem) {
+    let rankNum =
+        rankItem.getElementsByClassName('num')[0] &&
+        rankItem.getElementsByClassName('num')[0].innerText,
+      rankCate =
+        rankItem.getElementsByClassName('category')[0] &&
+        rankItem.getElementsByClassName('category')[0].innerText,
+      rankChangeDirection =
+        (rankItem.getElementsByClassName('rank-up')[0] && '上升') ||
+        (rankItem.getElementsByClassName('rank-down')[0] && '下降') ||
+        (rankItem.getElementsByClassName('no-change')[0] && '没有变化') ||
+        '',
+      rankChangeDesc =
+        (rankItem.getElementsByClassName('rank')[0] &&
+          (rankItem.getElementsByClassName('rank')[0].title ||
+            rankItem.getElementsByClassName('rank')[0].innerText)) ||
+        (rankItem.getElementsByClassName('no-change')[0] && '没有变化') ||
+        '',
+      rankChangeNum =
+        rankItem.getElementsByClassName('rank')[0] &&
+        rankItem
+          .getElementsByClassName('rank')[0]
+          .getElementsByTagName('span')[0] &&
+        rankItem
+          .getElementsByClassName('rank')[0]
+          .getElementsByTagName('span')[0].innerText
+
+    return {
+      rankNum,
+      rankCate,
+      rankChangeDirection,
+      rankChangeDesc,
+      rankChangeNum
+    }
+  }
+
+  let pageInfo = { infoList: [], flag: 'market' }
+
+  let market = document.getElementsByClassName('ivu-tabs-tab-active')[0]
+      .innerText,
+    filters = document
+      .getElementsByClassName('filter-container')[0]
+      .getElementsByClassName('active'),
+    filterInfo = [market]
+
+  for (let filter of filters) {
+    filterInfo.push(filter.innerText.trim())
+  }
+
+  pageInfo.filterInfo = filterInfo
+
+  let table = document.getElementsByTagName('tbody')[0],
+    itemList = table.getElementsByTagName('tr'),
+    infoList = []
+
+  for (let item of itemList) {
+    // let index = child.getElementsByClassName('index-1')[0].innerText
+    if (item.getElementsByClassName('index')[0] === undefined) {
+      continue
+    }
+    let index = item.getElementsByClassName('index')[0].innerText,
+      name = item.getElementsByClassName('name')[0].innerText,
+      url = item.getElementsByClassName('name')[0].href,
+      company = item.getElementsByClassName('company')[0].innerText,
+      totalRank = item.getElementsByTagName('td')[2],
+      totalRankInfo = rankParse(totalRank),
+      category = item
+        .getElementsByTagName('td')[3]
+        .getElementsByClassName('index')[0].innerText,
+      increYesterday = item
+        .getElementsByTagName('td')[4]
+        .getElementsByClassName('index')[0].innerText,
+      lastUpdateDate = item
+        .getElementsByTagName('td')[5]
+        .getElementsByClassName('index')[0].innerText
+
+    infoList.push({
+      index,
+      name,
+      url,
+      company,
+      totalRankInfo,
+      category,
+      increYesterday,
+      lastUpdateDate
+    })
+  }
+  // console.info('>>>>infoList', infoList)
+  pageInfo.infoList = infoList
+  return pageInfo
+}
+
 function send(pageInfo) {
   chrome.runtime.sendMessage({ pageInfo }, function(response) {
     // console.log(response.farewell)
@@ -163,6 +256,11 @@ function dispatcher() {
   if (currentUrl.match('/rank/index/brand') !== null) {
     return BrandParser
   }
+
+  if (currentUrl.match('/rank/marketRank') !== null) {
+    return MarketParser
+  }
+
   return () => {}
 }
 

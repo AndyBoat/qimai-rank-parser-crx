@@ -139,6 +139,79 @@ function generateCSV(pageInfo) {
       content: csvContent
     }
   }
+
+  if (flag === 'market') {
+    rows.push(filterInfo.join('-'))
+    const Index = '序号',
+      Name = 'App名',
+      Link = '链接',
+      Company = '公司名',
+      TotalRank = '总排名',
+      TotalRankChangeDirection = '总排名变化方向',
+      TotalRankChangeNum = '总排名变化数',
+      TotalRankChangeDesc = '总排名变化描述',
+      Cate = '分类',
+      IncreateYes = '昨日新增',
+      LastUpdate = '上次更新日期'
+
+    //cate,cateRank,cateRankChangeDirection,cateRankChangeNum,cateRankChangeDesc
+    rows.push(
+      [
+        Index,
+        Name,
+        Link,
+        Company,
+        TotalRank,
+        TotalRankChangeDirection,
+        TotalRankChangeNum,
+        TotalRankChangeDesc,
+        Cate,
+        IncreateYes,
+        LastUpdate
+      ].join(',')
+    )
+
+    const { infoList } = pageInfo
+    let childrenLength = infoList.length
+    for (let info of infoList) {
+      let {
+        index,
+        name,
+        url,
+        company,
+        totalRankInfo,
+        category,
+        increYesterday,
+        lastUpdateDate
+      } = info
+
+      rows.push(
+        [
+          index,
+          name.replace(/,/g, '_'),
+          url,
+          company.replace(/,/g, '_'),
+          totalRankInfo.rankNum,
+          totalRankInfo.rankChangeDirection,
+          totalRankInfo.rankChangeNum,
+          totalRankInfo.rankChangeDesc &&
+            totalRankInfo.rankChangeDesc.replace(/,/g, '_'),
+          category,
+          increYesterday,
+          lastUpdateDate
+        ].join(',')
+      )
+    }
+
+    const csvContent = rows.join('\r\n')
+    let date = new Date().toLocaleDateString()
+    const csvName = `${date}_${filterInfo.join('_')}_${childrenLength}`
+
+    return {
+      name: csvName,
+      content: csvContent
+    }
+  }
 }
 
 function downloadCSV(csvInfo) {
